@@ -4,6 +4,7 @@
 
 # Verify Hostname
 - include: initialize.yml
+- include: scapremediations.yml
 - include: user.yml
 - include: miscellaneous.yml
 
