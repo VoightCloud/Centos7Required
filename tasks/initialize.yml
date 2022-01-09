@@ -15,9 +15,9 @@
     dest: '/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release'
   become: true
 
-- name: Install redhat-release GPG key
-  command: rpm --import RPM-GPG-KEY-redhat-release
-  become: true
+#- name: Install redhat-release GPG key
+#  command: rpm --import RPM-GPG-KEY-redhat-release
+#  become: true
 
 - name: Yum Update
   yum:
