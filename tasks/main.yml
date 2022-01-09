@@ -4,10 +4,9 @@
 
 # Verify Hostname
 - include: initialize.yml
+- include: miscellaneous.yml
 - include: scapremediations.yml
 - include: user.yml
-- include: miscellaneous.yml
-
 
 
 - name: Cleaning up temp directories used for installs
