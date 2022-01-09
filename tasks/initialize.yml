@@ -9,6 +9,12 @@
   command: grub2-mkconfig -o /boot/grub2/grub.cfg
   become: true
 
+- name: Download RPM-GPG-KEY
+  get_url:
+    url: "https://www.redhat.com/security/data/fd431d51.txt"
+    dest: '/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release'
+  become: true
+
 - name: Install redhat-release GPG key
   command: rpm --import RPM-GPG-KEY-redhat-release
   become: true
