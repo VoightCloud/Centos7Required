@@ -1,0 +1,7 @@
+- name: cleanup temp install directory
+  file:
+    path: '{{ item.path }}'
+    state: absent
+  become: true
+  loop:
+    - { path: '{{ tmp_dir }}install-mfetp.sh' }

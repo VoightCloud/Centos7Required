@@ -1,0 +1,13 @@
+---
+# handlers file for katello_install
+
+- name: list repos
+  yum:
+    list: repolist
+  become: true
+
+- name: remove_centos_repo
+  file:
+    path: /etc/yum.repos.d/centos-deps.repo
+    state: absent
+  become: true

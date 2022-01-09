@@ -1,0 +1,7 @@
+---
+
+tmp_dir: '/home/ec2-admin/tmp/'
+
+stig_url: "https://github.com/ComplianceAsCode/content/releases/download/v0.1.56/scap-security-guide-0.1.56.zip"
+
+stig_skip: 'banner_etc_issue,sudo_remove_nopasswd'

@@ -1,0 +1,24 @@
+# ---------------------- #
+# COMMON ACTIVATION KEYS #
+# ---------------------- #
+# non-prod-centos6
+# non-prod-centos7
+# non-prod-devops
+# non-prod-rhel6
+# non-prod-rhel7
+# non-prod-rhel7-docker
+# pre-prod-centos6
+# pre-prod-centos7
+# pre-prod-devops
+# pre-prod-rhel6
+# pre-prod-rhel7
+# pre-prod-rhel7-docker
+# prod-centos6
+# prod-centos7
+# prod-devops
+# prod-rhel6
+# prod-rhel7
+# prod-rhel7-docker
+---
+# defaults file for katello_install
+activationkey: ''

@@ -1,0 +1,23 @@
+---
+# tasks file for sub_defaults
+- name: Copy CentOS Deps Repo
+  copy: 
+    src: "files/centos-deps.repo"
+    dest: "/etc/yum.repos.d/centos-deps.repo"
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+
+- name: Create tmp_dir
+  file:
+    path: "{{ tmp_dir }}"
+    state: directory
+
+- name: Unset http proxy env setting
+  shell: unset {http,HTTP,https,HTTPS}_{proxy,PROXY}
+  become: true
+
+- name: Clear subscriptions
+  command: subscription-manager clean
+  become: true

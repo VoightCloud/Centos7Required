@@ -1,0 +1,268 @@
+# Apply Nessus findings remediations
+
+- name: cron log 1010858
+  replace:
+    path: /etc/rsyslog.conf
+    regexp: '(\s+)/var/log/cron(\s*)$'
+    replace: '\1/var/log/cron.log\2'
+  become: true
+
+- name: Disable kernel dump 1010861
+  systemd:
+    name: kdump.service
+    enabled: false
+  become: true
+
+- name: Enable tmp.mount 1010865
+  systemd:
+    name: tmp.mount
+    enabled: true
+  become: true
+
+- name: Prevent unrestricted email relay 1011058
+  lineinfile:
+    path: /etc/postfix/main.cf
+    line: "smtpd_client_restrictions = permit_mynetworks,reject"
+  become: true
+
+- name: certificate status check 1011076
+  replace:
+    path: /etc/pam_pkcs11/pam_pkcs11.conf
+    regexp: '(\s+cert_policy\s*=\s*)(ca, signature\s*)$'
+    replace: '\1oscp_on, \2'
+  become: true
+
+- name: Set minimum password age 1024213
+  command: 'chage -m 1 {{ item }}'
+  with_items:
+    - ec2-admin
+  become: true
+
+- name: Set maximum password age 1024215
+  command: 'chage -M 60 {{ item }}'
+  with_items:
+    - ec2-admin
+  become: true
+
+- name: Prevent password reuse 1024216
+  lineinfile:
+    path: '/etc/pam.d/{{ item }}'
+    line: 'password requisite pam_pwhistory.so use_authtok remember=5 retry=3'
+  with_items:
+    - system-auth
+    - password-auth
+  become: true
+
+- name: Send AIDE results to root 1024251
+  replace:
+    path: /var/spool/cron/root
+    regexp: '5 4 \* \* 0 /usr/sbin/aide --check'
+    replace: '5 4 * * * /usr/sbin/aide --update | /bin/mail -s "$HOSTNAME - Daily aide integrity check run" root@localhost && mv -f /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz'
+  become: true
+
+- name: Update pam login skel umask
+  lineinfile:
+    path: "/etc/pam.d/login"
+    line: "session    required     pam_mkhomedir.so skel=/etc/skel umask=7077"
+  become: true
+
+- name: Update login.defs umask
+  replace:
+    path: "/etc/login.defs"
+    regexp: '^UMASK.*$'
+    replace: 'UMASK 077'
+  become: true
+
+- name: Ensure ec2-admin directory owned by ec2-admin user 1024261, 1024262, 1024263
+  file:
+    path: /home/ec2-admin
+    state: directory
+    recurse: yes
+    owner: ec2-admin
+    group: ec2-admin
+    mode: '0740'
+  become: true
+
+- name: Ensure initialization files are 0644 or lower 1024333 1024264
+  file:
+    path: '/home/ec2-admin/{{ item }}'
+    mode: '0640'
+  with_fileglob:
+    - "/home/ec2-admin/.*"
+    - "/root/.[^.]*"
+  become: true
+
+- name: Create dconf directories
+  file:
+    path: "/etc/dconf/db/local.d/locks/"
+    state: directory
+    owner: root
+    group: root
+    mode: '0640'
+    recurse: true
+  become: true
+
+- name: Copy No-Automount
+  copy:
+    src: "files/00-No-Automount"
+    dest: "/etc/dconf/db/local.d/00-No-Automount"
+    owner: root
+    group: root
+    mode: '0640'
+  become: true
+
+- name: Copy No-Automount-lock
+  copy:
+    src: "files/00-No-Automount.lock"
+    dest: "/etc/dconf/db/local.d/locks/00-No-Automount"
+    owner: root
+    group: root
+    mode: '0640'
+  become: true
+
+- name: Activate No automount
+  command: dconf update
+  become: true
+
+- name: Show last failed login
+  lineinfile:
+    path: /etc/pam.d/postlogin
+    line: session required pam_lastlog.so showfailed
+  become: true
+
+- name: Create usb-storage config
+  copy:
+    src: "files/usb-storage.conf"
+    dest: "/etc/modprobe.d/usb-storage.conf"
+    owner: root
+    group: root
+    mode: '0640'
+  become: true
+
+- name: Create blacklist file
+  file:
+    path: '/etc/modprobe.d/blacklist.conf'
+    state: touch
+    owner: root
+    group: root
+    mode: '0640'
+  become: true
+
+- name: Deactivate usb-storage module
+  lineinfile:
+    path: '/etc/modprobe.d/blacklist.conf'
+    line: 'blacklist usb-storage'
+    regexp: '.*usb-storage'
+  become: true
+
+- name: Activate authentication fail lock
+  lineinfile:
+    path: '{{ item }}'
+    regexp: 'auth       required pam_faillock\.so preauth silent.*fail_interval=900 unlock_time=0'
+    line: 'auth       required pam_faillock.so preauth silent deny=3 even_deny_root fail_interval=900 unlock_time=900'
+  become: true
+  with_items:
+    - /etc/pam.d/system-auth
+    - /etc/pam.d/password-auth
+
+- name: Activate authentication default die
+  lineinfile:
+    path: '{{ item }}'
+    regexp: 'auth\s+\[default=die\] pam_faillock\.so authfail.*fail_interval=900 unlock_time=0'
+    line: 'auth       [default=die] pam_faillock.so authfail deny=3 even_deny_root fail_interval=900 unlock_time=900'
+  become: true
+  with_items:
+    - /etc/pam.d/system-auth
+    - /etc/pam.d/password-auth
+
+- name: Add max polling to chrony.conf
+  replace:
+    path: '/etc/chrony.conf'
+    regexp: '^(.*server.*iburst)$'
+    replace: '\1 maxpoll 10'
+  become: true
+
+- name: Restart chrony
+  service:
+    name: chronyd
+    state: restarted
+  become: true
+
+- name: Notify on 75% disk space
+  replace:
+    path: '/etc/audit/auditd.conf'
+    regexp: 'space_left\s*=\s*100'
+    replace: 'space_left = 637'
+  become: true
+
+- name: Create audisp-remote file
+  file:
+    path: '/etc/audisp/audisp-remote.conf'
+    state: touch
+  become: true
+
+- name: Notify on audit network error
+  blockinfile:
+    path: '/etc/audisp/audisp-remote.conf'
+    block: |
+      network_failure_action = syslog
+      disk_full_action = syslog
+  become: true
+
+- name: Local initialization file permissions
+  file:
+    path: "/root/{{ item }}"
+    mode: '0640'
+  become: true
+  with_items:
+    - ".cshrc"
+    - ".tcshrc"
+    - ".bash_logout"
+    - ".bash_profile"
+    - ".bashrc"
+
+- name: AIDE replace sha256 with sha512
+  replace:
+    path: /etc/aide.conf
+    regexp: '^([A-Z].*)sha256(.*)$'
+    replace: '\1sha512\2'
+  become: true
+
+- name: AIDE acl
+  replace:
+    path: /etc/aide.conf
+    regexp: '^({{ item }}.*)'
+    replace: '\1+acl'
+  with_items:
+    - "NORMAL "
+    - "CONTENT "
+  become: true
+
+- name: AIDE xattr
+  replace:
+    path: /etc/aide.conf
+    regexp: '^({{ item }}.*)'
+    replace: '\1+xattrs'
+  with_items:
+    - "NORMAL "
+    - "CONTENT "
+    - "LOG "
+  become: true
+
+- name: AIDE sha512
+  replace:
+    path: /etc/aide.conf
+    regexp: '^({{ item }}.*)'
+    replace: '\1+sha512'
+  with_items:
+    - "PERMS "
+    - "LOG "
+  become: true
+
+- name: Touch and set ansible hidden file permission (RHEL-07-020710)
+  file:
+    state: touch
+    path: "/root/.ansible_sync"
+    mode: 0740
+  become: true
+  ignore_errors: true

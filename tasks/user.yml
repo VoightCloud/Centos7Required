@@ -1,0 +1,62 @@
+- name: Remove centos sudoers file
+  file:
+    path: /etc/sudoers.d/centos
+    state: absent
+  become: true
+
+- name: Remove extra users
+  user:
+    name: "{{ item }}"
+    state: absent
+  become: true
+  with_items:
+    - centos
+    - lp
+    - ftp
+    - games
+
+- name: Clean up centos home dir
+  file:
+    path: "{{ item }}"
+    state: absent
+  become: true
+  with_items:
+    - /home/centos/
+    - /var/spool/mail/centos
+
+- name: ec2-admin home group ec2-admin
+  file:
+    path: /home/ec2-admin
+    group: ec2-admin
+    recurse: true
+  become: true
+
+- name: Don't require password change for account for ssh with key
+  lineinfile:
+    path: /etc/pam.d/sshd
+    line: "account    sufficient   pam_unix.so no_pass_expiry"
+    regexp: '^account\s+sufficient\s+pam_unix.so no_pass_expiry$'
+    insertafter: '^account\s+required.*'
+  become: true
+
+- name: Don't require password change for login with ssh key
+  lineinfile:
+    path: /etc/pam.d/sshd
+    line: "password   sufficient   pam_unix.so no_pass_expiry"
+    regexp: '^password\s+sufficient\s+pam_unix.so no_pass_expiry$'
+    insertafter: '^password\s+include.*'
+  become: true
+
+- name: Add sshd AllowGroups
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "AllowGroups linux_infrastructure_admins linux_middletier_admins ec2-admin"
+    regexp: '^AllowGroups.*'
+    insertbefore: '^HostKey.*'
+  become: true
+
+- name: Restart sshd
+  systemd:
+    name: sshd
+    state: restarted
+  become: true

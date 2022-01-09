@@ -1,0 +1,41 @@
+- name: AIDE log format and location
+  blockinfile:
+    path: /etc/aide.conf
+    marker: "# {mark} SYSLOG BLOCK"
+    block: |
+      syslog_format=true
+      report_url=syslog:LOG_AUTH
+    insertbefore: '^report_url='
+  become: true
+
+- name: Update aide config file to ignore noisy directories
+  blockinfile:
+    path: /etc/aide.conf
+    marker: "# {mark} NOISY BLOCK"
+    block: |
+      !/lib/modules/*/extra/falcon*
+      !/etc/tenable_tag
+      !/opt/CrowdStrike/
+      !/opt/Tanium/TaniumClient/
+      !/opt/splunkforwarder/
+      !/etc/rhsm/facts/uuid_override.facts
+      !/etc/hostname
+      !/etc/nsswitch.conf
+      !/etc/resolv.conf
+      !/var/log/
+      !/var/run/utmp
+      !/root/.ansible_async
+      !/etc/yum.repos.d/
+      !/etc/pki/entitlement/
+      !/etc/pki/consumer/
+      !/etc/pki/consumer.old/
+  become: true
+
+- name: Initialize AIDE
+  command: "sh -c 'grep -v \"syslog:LOG_AUTH\" /etc/aide.conf | aide --init -c - >> /dev/null'"
+  become: true
+
+- name: Move aide db
+  command: mv /var/lib/aide/aide.db.new.gz  /var/lib/aide/aide.db.gz
+  become: true
+

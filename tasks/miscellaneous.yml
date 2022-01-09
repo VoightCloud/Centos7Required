@@ -1,0 +1,13 @@
+- name: "Install logrotate, mailx, chrony, wget, firewalld, unzip"
+  yum:
+    name:
+      - dconf
+      - logrotate
+      - mailx
+      - chrony
+      - wget
+      - firewalld
+      - unzip
+    state: present
+  become: true
+

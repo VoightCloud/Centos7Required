@@ -1,0 +1,8 @@
+---
+- name: Katello Install Playbook
+  hosts: all
+  become: true
+  vars:
+    activationkey: non-prod-centos7
+  roles: 
+    - katello

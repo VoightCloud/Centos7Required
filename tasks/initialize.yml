@@ -1,0 +1,136 @@
+- name: Enable fips in grub config
+  replace:
+    path: '/etc/default/grub'
+    regexp: '^(GRUB_CMDLINE_LINUX=".*)"$'
+    replace: '\1 fips=1 boot=/dev/sda1"'
+  become: true
+
+- name: Activate fips
+  command: grub2-mkconfig -o /boot/grub2/grub.cfg
+  become: true
+
+- name: Yum Update
+  yum:
+    name: '*'
+    skip_broken: no
+    exclude: qpid-proton-c
+    state: latest
+  become: true
+
+- name: Remove all old kernels after update
+  command: "package-cleanup --oldkernels --count=1 -y"
+  become: true
+
+- name: Download Compliance as Code
+  unarchive:
+    src: "{{ stig_url }}"
+    dest: "/home/ec2-admin"
+    remote_src: true
+  become: true
+
+- name: Find openscap directory
+  find:
+    paths: /home/ec2-admin
+    file_type: directory
+    patterns: "^.*(scap-security-guide.*)$"
+    recurse: no
+    use_regex: yes
+  register: scaplocation
+
+- name: debug scap
+  debug:
+    msg: "{{ scaplocation.files[0].path }}"
+
+- name: Replace redhat with centos
+  ansible.builtin.replace:
+    path: "{{ scaplocation.files[0].path }}/ansible/rhel7-playbook-stig.yml"
+    regexp: '(Redhat-Release)'
+    replace: 'CentOS'
+
+- name: STIG recommended audit rules.
+  copy:
+    src: "/usr/share/doc/audit-2.8.5/rules/{{ item }}"
+    dest: /etc/audit/rules.d/
+    remote_src: true
+  with_items:
+    - 10-base-config.rules
+    - 30-stig.rules
+    - 31-privileged.rules
+    - 99-finalize.rules
+  become: true
+
+#- name: Audit rules
+#  blockinfile:
+#    path: /etc/audit/rules.d/98-audit.rules
+#    create: yes
+#    block: |
+#      -a always,exit -F arch=b32 -S execve -C uid!=euid -F euid=0 -k setuid
+#      -a always,exit -F arch=b64 -S execve -C uid!=euid -F euid=0 -k setuid
+#      -a always,exit -F arch=b32 -S execve -C gid!=egid -F egid=0 -k setgid
+#      -a always,exit -F arch=b64 -S execve -C gid!=egid -F egid=0 -k setgid
+#      -a always,exit -F path=/usr/sbin/semanage -F auid>=1000 -F auid!=unset -k privileged-priv_change
+#      -a always,exit -F path=/usr/sbin/setsebool -F auid>=1000 -F auid!=unset -k privileged-priv_change
+#      -a always,exit -F path=/usr/bin/chcon -F auid>=1000 -F auid!=unset -k privileged-priv_change
+#      -a always,exit -F path=/usr/sbin/setfiles -F auid>=1000 -F auid!=unset -k privileged-priv_change
+#      -a always,exit -F path=/usr/bin/passwd -F auid>=1000 -F auid!=4294967295 -k privileged-passwd
+#      -a always,exit -F path=/usr/sbin/unix_chkpwd -F auid>=1000 -F auid!=unset -k privileged-passwd
+#      -a always,exit -F path=/usr/bin/gpasswd -F auid>=1000 -F auid!=unset -k privileged-passwd
+#      -a always,exit -F path=/usr/bin/chage -F auid>=1000 -F auid!=unset -k privileged-passwd
+#      -a always,exit -F path=/usr/sbin/userhelper -F auid>=1000 -F auid!=unset -k privileged-passwd
+#      -a always,exit -F path=/usr/bin/su -F auid>=1000 -F auid!=unset -k privileged-priv_change
+#      -a always,exit -F path=/usr/bin/sudo -F auid>=1000 -F auid!=unset -k privileged-priv_change
+#      -a always,exit -F path=/usr/bin/newgrp -F auid>=1000 -F auid!=unset -k privileged-priv_change
+#      -a always,exit -F path=/usr/bin/chsh -F auid>=1000 -F auid!=unset -k privileged-priv_change
+#      -a always,exit -F arch=b32 -S mount -F auid>=1000 -F auid!=unset -k privileged-mount
+#      -a always,exit -F arch=b64 -S mount -F auid>=1000 -F auid!=unset -k privileged-mount
+#      -a always,exit -F path=/usr/bin/mount -F auid>=1000 -F auid!=unset -k privileged-mount
+#      -a always,exit -F path=/usr/bin/umount -F auid>=1000 -F auid!=unset -k privileged-mount
+#      -a always,exit -F path=/usr/sbin/postdrop -F auid>=1000 -F auid!=unset -k privileged-postfix
+#      -a always,exit -F path=/usr/sbin/postqueue -F auid>=1000 -F auid!=unset -k privileged-postfix
+#      -a always,exit -F path=/usr/libexec/openssh/ssh-keysign -F auid>=1000 -F auid!=unset -k privileged-ssh
+#      -a always,exit -F path=/usr/bin/crontab -F auid>=1000 -F auid!=4294967295 -k privileged-cron
+#      -a always,exit -F path=/usr/sbin/pam_timestamp_check -F auid>=1000 -F auid!=unset -k privileged-pam
+#      -a always,exit -F arch=b32 -S create_module -k module-change
+#      -a always,exit -F arch=b64 -S create_module -k module-change
+#      -w /usr/bin/kmod -p x -F auid!=unset -k module-change
+#      -w /etc/sudoers -p wa -k privileged-actions
+#      -w /etc/sudoers.d/ -p wa -k privileged-actions
+#  become: true
+
+
+- name: STIG
+  command: >
+    /usr/local/bin/ansible-playbook -c local -i localhost,
+    "{{ scaplocation.files[0].path }}/ansible/rhel7-playbook-stig.yml"
+    --skip-tags "{{ stig_skip }}" -u root
+  become: true
+
+#- name: Find audit rules files
+#  find:
+#    paths: "/etc/audit/rules.d"
+#    patterns: "^.*rules$"
+#    recurse: no
+#    use_regex: yes
+#  register: audit_files
+#  become: true
+#
+#- name: sed the stig
+#  command: "sed -i 's/F key=/k /' {{ item.path }}"
+#  with_items: "{{ audit_files.files }}"
+#  become: true
+
+- name: Apply audit rules
+  command: augenrules --load
+  become: true
+
+- name: Clean up password yaml
+  file:
+    path: /home/ec2-admin/ansiblepwd.yaml
+    state: absent
+  become: true
+
+- name: Clean up tmp
+  file:
+    path: /tmp/packer-provisioner-ansible-local
+    state: absent
+  become: true

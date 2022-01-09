@@ -1,0 +1,16 @@
+- name: "Gather packages information"
+  package_facts:
+    manager: "auto"
+
+# Verify Hostname
+- include: initialize.yml
+- include: user.yml
+- include: miscellaneous.yml
+
+
+
+- name: Cleaning up temp directories used for installs
+  import_tasks: cleanup.yml
+
+- name: Aide initialize
+  import_tasks: aide.yml
