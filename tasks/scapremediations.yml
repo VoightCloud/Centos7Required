@@ -160,7 +160,7 @@
   lineinfile:
     path: '{{ item }}'
     regexp: 'auth       required pam_faillock\.so preauth silent.*fail_interval=900 unlock_time=0'
-    line: 'auth       required pam_faillock.so preauth silent deny=3 even_deny_root fail_interval=900 unlock_time=900'
+    line: 'auth required pam_faillock.so preauth silent deny=6 unlock_time=1800 fail_interval=900'
   become: true
   with_items:
     - /etc/pam.d/system-auth
@@ -170,7 +170,7 @@
   lineinfile:
     path: '{{ item }}'
     regexp: 'auth\s+\[default=die\] pam_faillock\.so authfail.*fail_interval=900 unlock_time=0'
-    line: 'auth       [default=die] pam_faillock.so authfail deny=3 even_deny_root fail_interval=900 unlock_time=900'
+    line: 'auth [default=die] pam_faillock.so authfail deny=6 unlock_time=1800 fail_interval=900'
   become: true
   with_items:
     - /etc/pam.d/system-auth
@@ -210,17 +210,17 @@
       disk_full_action = syslog
   become: true
 
-- name: Local initialization file permissions
-  file:
-    path: "/root/{{ item }}"
-    mode: '0640'
-  become: true
-  with_items:
-    - ".cshrc"
-    - ".tcshrc"
-    - ".bash_logout"
-    - ".bash_profile"
-    - ".bashrc"
+#- name: Local initialization file permissions
+#  file:
+#    path: "/root/{{ item }}"
+#    mode: '0640'
+#  become: true
+#  with_items:
+#    - ".cshrc"
+#    - ".tcshrc"
+#    - ".bash_logout"
+#    - ".bash_profile"
+#    - ".bashrc"
 
 - name: AIDE replace sha256 with sha512
   replace:
@@ -259,11 +259,3 @@
     - "PERMS "
     - "LOG "
   become: true
-
-- name: Touch and set ansible hidden file permission (RHEL-07-020710)
-  file:
-    state: touch
-    path: "/root/.ansible_sync"
-    mode: 0740
-  become: true
-  ignore_errors: true

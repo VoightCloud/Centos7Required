@@ -6,7 +6,7 @@
   become: true
 
 - name: Activate fips
-  command: grub2-mkconfig -o /boot/grub2/grub.cfg
+  command: grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
   become: true
 
 - name: Download RPM-GPG-KEY
@@ -46,27 +46,17 @@
     use_regex: yes
   register: scaplocation
 
-#- name: debug scap
-#  debug:
-#    msg: "{{ scaplocation.files[0].path }}"
-
-#- name: Replace redhat with centos
-#  ansible.builtin.replace:
-#    path: "{{ scaplocation.files[0].path }}/ansible/rhel7-playbook-stig.yml"
-#    regexp: '(Redhat-Release)'
-#    replace: 'CentOS'
-
-- name: STIG recommended audit rules.
-  copy:
-    src: "/usr/share/doc/audit-2.8.5/rules/{{ item }}"
-    dest: /etc/audit/rules.d/
-    remote_src: true
-  with_items:
-    - 10-base-config.rules
-    - 30-stig.rules
-    - 31-privileged.rules
-    - 99-finalize.rules
-  become: true
+#- name: STIG recommended audit rules.
+#  copy:
+#    src: "/usr/share/doc/audit-2.8.5/rules/{{ item }}"
+#    dest: /etc/audit/rules.d/
+#    remote_src: true
+#  with_items:
+#    - 10-base-config.rules
+#    - 30-stig.rules
+#    - 31-privileged.rules
+#    - 99-finalize.rules
+#  become: true
 
 #- name: Audit rules
 #  blockinfile:
@@ -114,19 +104,6 @@
     --skip-tags "{{ stig_skip }}" -u root
   become: true
 
-#- name: Find audit rules files
-#  find:
-#    paths: "/etc/audit/rules.d"
-#    patterns: "^.*rules$"
-#    recurse: no
-#    use_regex: yes
-#  register: audit_files
-#  become: true
-#
-#- name: sed the stig
-#  command: "sed -i 's/F key=/k /' {{ item.path }}"
-#  with_items: "{{ audit_files.files }}"
-#  become: true
 
 - name: Apply audit rules
   command: augenrules --load
