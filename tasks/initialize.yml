@@ -6,8 +6,12 @@
 #    replace: '\1 fips=1 audit=1 boot=/dev/sda1"'
   become: true
 
-- name: Activate fips
+- name: Activate grub changes
   command: grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
+  become: true
+
+- name: Enable gubby for audit
+  command: grubby --update-kernel=ALL --args="audit=1"
   become: true
 
 - name: Download RPM-GPG-KEY
@@ -101,6 +105,12 @@
 #      -w /etc/sudoers.d/ -p wa -k privileged-actions
 #  become: true
 
+- name: Replace check with update for aide
+  replace:
+    path: "{{ scaplocation.files[0].path }}/ssg-centos-ds.xml"
+    regexp: " --check"
+    replace: " -- update"
+  become: true
 
 - name: Apply PCI-DSS SCAP Profile
   command: >
