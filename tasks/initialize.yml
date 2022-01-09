@@ -2,7 +2,8 @@
   replace:
     path: '/etc/default/grub'
     regexp: '^(GRUB_CMDLINE_LINUX=".*)"$'
-    replace: '\1 fips=1 audit=1 boot=/dev/sda1"'
+    replace: '\1 audit=1 boot=/dev/sda1"'
+#    replace: '\1 fips=1 audit=1 boot=/dev/sda1"'
   become: true
 
 - name: Activate fips
