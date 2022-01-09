@@ -37,15 +37,15 @@
     use_regex: yes
   register: scaplocation
 
-- name: debug scap
-  debug:
-    msg: "{{ scaplocation.files[0].path }}"
+#- name: debug scap
+#  debug:
+#    msg: "{{ scaplocation.files[0].path }}"
 
-- name: Replace redhat with centos
-  ansible.builtin.replace:
-    path: "{{ scaplocation.files[0].path }}/ansible/rhel7-playbook-stig.yml"
-    regexp: '(Redhat-Release)'
-    replace: 'CentOS'
+#- name: Replace redhat with centos
+#  ansible.builtin.replace:
+#    path: "{{ scaplocation.files[0].path }}/ansible/rhel7-playbook-stig.yml"
+#    regexp: '(Redhat-Release)'
+#    replace: 'CentOS'
 
 - name: STIG recommended audit rules.
   copy:
@@ -101,7 +101,7 @@
 - name: STIG
   command: >
     /usr/local/bin/ansible-playbook -c local -i localhost,
-    "{{ scaplocation.files[0].path }}/ansible/rhel7-playbook-stig.yml"
+    "{{ scaplocation.files[0].path }}/ansible/centos7-playbook-pci-dss.yml"
     --skip-tags "{{ stig_skip }}" -u root
   become: true
 
