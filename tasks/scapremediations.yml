@@ -57,7 +57,8 @@
   replace:
     path: /var/spool/cron/root
     regexp: '5 4 \* \* 0 /usr/sbin/aide --check'
-    replace: '5 4 * * * /usr/sbin/aide --update | /bin/mail -s "$HOSTNAME - Daily aide integrity check run" root@localhost && mv -f /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz'
+#    replace: '5 4 * * * /usr/sbin/aide --update | /bin/mail -s "$HOSTNAME - Daily aide integrity check run" root@localhost && mv -f /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz'
+    replace: '5 4 * * * /usr/sbin/aide --check | /bin/mail -s "$HOSTNAME - Daily aide integrity check run" root@localhost'
   become: true
 
 - name: Update pam login skel umask

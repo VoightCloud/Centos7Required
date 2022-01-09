@@ -36,6 +36,6 @@
   become: true
 
 - name: Move aide db
-  command: mv /var/lib/aide/aide.db.new.gz  /var/lib/aide/aide.db.gz
+  command: cp /var/lib/aide/aide.db.new.gz  /var/lib/aide/aide.db.gz
   become: true
 
