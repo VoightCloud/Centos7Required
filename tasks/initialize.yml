@@ -107,7 +107,7 @@
 
 - name: Replace check with update for aide
   replace:
-    path: "{{ scaplocation.files[0].path }}/ssg-centos-ds.xml"
+    path: "{{ scaplocation.files[0].path }}/ssg-centos7-ds.xml"
     regexp: " --check"
     replace: " -- update"
   become: true
