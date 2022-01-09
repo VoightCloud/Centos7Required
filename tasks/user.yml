@@ -50,7 +50,7 @@
 - name: Add sshd AllowGroups
   lineinfile:
     path: /etc/ssh/sshd_config
-    line: "AllowGroups linux_infrastructure_admins linux_middletier_admins ec2-admin"
+    line: "AllowGroups ec2-admin"
     regexp: '^AllowGroups.*'
     insertbefore: '^HostKey.*'
   become: true
