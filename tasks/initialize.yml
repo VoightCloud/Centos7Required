@@ -20,10 +20,6 @@
     dest: '/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release'
   become: true
 
-#- name: Install redhat-release GPG key
-#  command: rpm --import RPM-GPG-KEY-redhat-release
-#  become: true
-
 - name: Yum Update
   yum:
     name: '*'
@@ -54,18 +50,6 @@
     recurse: no
     use_regex: yes
   register: scaplocation
-
-#- name: STIG recommended audit rules.
-#  copy:
-#    src: "/usr/share/doc/audit-2.8.5/rules/{{ item }}"
-#    dest: /etc/audit/rules.d/
-#    remote_src: true
-#  with_items:
-#    - 10-base-config.rules
-#    - 30-stig.rules
-#    - 31-privileged.rules
-#    - 99-finalize.rules
-#  become: true
 
 #- name: Audit rules
 #  blockinfile:
@@ -112,13 +96,13 @@
     replace: " -- update"
   become: true
 
+# For RedHat 7, change playbook to rhel7-playbook-stig.yml
 - name: Apply PCI-DSS SCAP Profile
   command: >
     /usr/local/bin/ansible-playbook -c local -i localhost,
     "{{ scaplocation.files[0].path }}/ansible/centos7-playbook-pci-dss.yml"
     --skip-tags "{{ stig_skip }}" -u root
   become: true
-
 
 - name: Apply audit rules
   command: augenrules --load
