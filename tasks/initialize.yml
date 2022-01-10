@@ -93,7 +93,7 @@
   replace:
     path: "{{ scaplocation.files[0].path }}/ssg-centos7-ds.xml"
     regexp: " --check"
-    replace: " -- update"
+    replace: " --update"
   become: true
 
 # For RedHat 7, change playbook to rhel7-playbook-stig.yml
