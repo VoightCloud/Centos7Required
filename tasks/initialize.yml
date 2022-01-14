@@ -40,13 +40,14 @@
     src: "{{ stig_url }}"
     dest: "/home/ec2-admin"
     remote_src: true
+    validate_certs: false
   become: true
 
 - name: Find openscap directory
   find:
     paths: /home/ec2-admin
     file_type: directory
-    patterns: "^.*(scap-security-guide.*)$"
+    patterns: "^(archive/build)$"
     recurse: no
     use_regex: yes
   register: scaplocation
@@ -100,7 +101,7 @@
 - name: Apply PCI-DSS SCAP Profile
   command: >
     /usr/local/bin/ansible-playbook -c local -i localhost,
-    "{{ scaplocation.files[0].path }}/ansible/centos7-playbook-pci-dss.yml"
+    "{{ scaplocation.files[0].path }}/ansible/centos7-playbook-stig.yml"
     --skip-tags "{{ stig_skip }}" -u root
   become: true
 
