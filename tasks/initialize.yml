@@ -98,7 +98,7 @@
   become: true
 
 # For RedHat 7, change playbook to rhel7-playbook-stig.yml
-- name: Apply PCI-DSS SCAP Profile
+- name: Apply STIG Profile
   command: >
     /usr/local/bin/ansible-playbook -c local -i localhost,
     "/home/ec2-admin/archive/build/ansible/centos7-playbook-stig.yml"
