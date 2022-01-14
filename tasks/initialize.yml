@@ -92,7 +92,7 @@
 
 - name: Replace check with update for aide
   replace:
-    path: "{{ scaplocation.files[0].path }}/ssg-centos7-ds.xml"
+    path: "/home/ec2-admin/archive/build/ssg-centos7-ds.xml"
     regexp: " --check"
     replace: " -- update"
   become: true
@@ -101,7 +101,7 @@
 - name: Apply PCI-DSS SCAP Profile
   command: >
     /usr/local/bin/ansible-playbook -c local -i localhost,
-    "{{ scaplocation.files[0].path }}/ansible/centos7-playbook-stig.yml"
+    "/home/ec2-admin/archive/build/ansible/centos7-playbook-stig.yml"
     --skip-tags "{{ stig_skip }}" -u root
   become: true
 
