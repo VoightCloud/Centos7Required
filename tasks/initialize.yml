@@ -97,6 +97,13 @@
     replace: " --update"
   become: true
 
+- name: Replace check with update for aide
+  replace:
+    path: "/home/ec2-admin/archive/build/ansible/centos7-playbook-stig.yml"
+    regexp: " --check"
+    replace: " --update"
+  become: true
+
 # For RedHat 7, change playbook to rhel7-playbook-stig.yml
 - name: Apply STIG Profile while skipping 'stig_skip'
   command: >
