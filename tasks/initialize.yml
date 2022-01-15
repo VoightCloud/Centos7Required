@@ -90,14 +90,14 @@
 #      -w /etc/sudoers.d/ -p wa -k privileged-actions
 #  become: true
 
-- name: Replace check with update for aide
+- name: Replace check with update for aide in xccdf scan
   replace:
     path: "/home/ec2-admin/archive/build/ssg-centos7-ds.xml"
     regexp: " --check"
     replace: " --update"
   become: true
 
-- name: Replace check with update for aide
+- name: Replace check with update for aide in stig playbook
   replace:
     path: "/home/ec2-admin/archive/build/ansible/centos7-playbook-stig.yml"
     regexp: " --check"
