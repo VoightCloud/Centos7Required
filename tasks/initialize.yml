@@ -104,6 +104,9 @@
     "/home/ec2-admin/archive/build/ansible/centos7-playbook-stig.yml"
     --skip-tags "{{ stig_skip }}" -u root
   become: true
+  register: out
+
+- debug: var=out.stdout_lines
 
 - name: Apply audit rules
   command: augenrules --load
