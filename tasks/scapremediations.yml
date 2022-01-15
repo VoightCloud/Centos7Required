@@ -86,7 +86,7 @@
 
 - name: Ensure initialization files are 0644 or lower 1024333 1024264
   file:
-    path: '/home/ec2-admin/{{ item }}'
+    path: '{{ item }}'
     mode: '0640'
   with_fileglob:
     - "/home/ec2-admin/.*"
