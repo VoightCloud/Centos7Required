@@ -94,7 +94,7 @@
   replace:
     path: "/home/ec2-admin/archive/build/ssg-centos7-ds.xml"
     regexp: " --check"
-    replace: " -- update"
+    replace: " --update"
   become: true
 
 # For RedHat 7, change playbook to rhel7-playbook-stig.yml
@@ -104,6 +104,9 @@
     "/home/ec2-admin/archive/build/ansible/centos7-playbook-stig.yml"
     --skip-tags "{{ stig_skip }}" -u root
   become: true
+  register: out
+
+- debug: var=out.stdout_lines
 
 - name: Apply audit rules
   command: augenrules --load
