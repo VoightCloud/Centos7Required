@@ -13,18 +13,12 @@
     path: /etc/aide.conf
     marker: "# {mark} NOISY BLOCK"
     block: |
-      !/lib/modules/*/extra/falcon*
-      !/etc/tenable_tag
-      !/opt/CrowdStrike/
-      !/opt/Tanium/TaniumClient/
-      !/opt/splunkforwarder/
       !/etc/rhsm/facts/uuid_override.facts
       !/etc/hostname
       !/etc/nsswitch.conf
       !/etc/resolv.conf
       !/var/log/
       !/var/run/utmp
-      !/root/.ansible_async
       !/etc/yum.repos.d/
       !/etc/pki/entitlement/
       !/etc/pki/consumer/
