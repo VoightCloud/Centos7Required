@@ -56,7 +56,7 @@
 - name: Send AIDE results to root 1024251
   replace:
     path: /var/spool/cron/root
-    regexp: '5 4 \* \* 0 /usr/sbin/aide --check'
+    regexp: '5 4 \* \* 0 /usr/sbin/aide --(check|update)'
     replace: '5 4 * * * /usr/sbin/aide --update | /bin/mail -s "$HOSTNAME - Daily aide integrity check run" root@localhost && mv -f /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz'
 #    replace: '5 4 * * * /usr/sbin/aide --check | /bin/mail -s "$HOSTNAME - Daily aide integrity check run" root@localhost'
   become: true
