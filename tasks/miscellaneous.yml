@@ -1,6 +1,14 @@
+- name: "Install epel-release"
+  yum:
+    name:
+      - epel-release
+    state: present
+  become: true
+
 - name: "Install logrotate, mailx, chrony, wget, firewalld, unzip"
   yum:
     name:
+      - epel-release
       - dconf
       - logrotate
       - mailx
@@ -8,6 +16,46 @@
       - wget
       - firewalld
       - unzip
+      - clamav-server
+      - clamav-data
+      - clamav-update
+      - clamav-filesystem
+      - clamav
+      - clamav-scanner-systemd
+      - clamav-devel
+      - clamav-lib
+      - clamav-server-systemd
     state: present
   become: true
 
+- name: Remove Example from clam scan.conf
+  replace:
+    path: /etc/clamd/d/scan.conf
+    regexp: '^Example'
+    replace: '#Example'
+  become: true
+
+- name: Replace #LocalSocket
+  replace:
+    path: /etc/clamd.d/scan.conf
+    regexp: '#LocalSocket'
+    replace: 'LocalSocket'
+  become: true
+
+- name: Replace Example in freshclam.conf
+  replace:
+    path: /etc/freshclam.conf
+    regexp: '^Example'
+    replace: "#Example'
+  become: true
+
+- name: Update freshclam
+  command: freshclam
+  become: true
+
+- name: Start clamd
+  systemd:
+    name: 'sclamd@scan'
+    state: 'started'
+    enabled: true
+  become: true
