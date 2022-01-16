@@ -55,7 +55,7 @@
 
 - name: Start clamd
   systemd:
-    name: 'sclamd@scan'
+    name: 'clamd@scan'
     state: 'started'
     enabled: true
   become: true
