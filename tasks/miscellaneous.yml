@@ -30,7 +30,7 @@
 
 - name: Remove Example from clam scan.conf
   replace:
-    path: /etc/clamd/d/scan.conf
+    path: /etc/clamd.d/scan.conf
     regexp: '^Example'
     replace: '#Example'
   become: true
