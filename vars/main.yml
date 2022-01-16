@@ -2,6 +2,6 @@
 
 tmp_dir: '/home/ec2-admin/tmp/'
 
-stig_url: "https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/scap-security-guide-0.1.59.zip"
+stig_url: "https://nexus.voight.org:9443/repository/STIG/STIG/scapstig.zip"
 
-stig_skip: 'sudo_remove_nopasswd'
+stig_skip: 'banner_etc_issue,sudo_remove_nopasswd,sudo_remove_no_authenticate,sudo_require_authentication,sudo_restrict_privilege_elevation_to_authorized,sudoers_validate_passwd,sshd_enable_warning_banner,sshd_enable_warning_banner_net'

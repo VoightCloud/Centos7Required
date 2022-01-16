@@ -40,13 +40,14 @@
     src: "{{ stig_url }}"
     dest: "/home/ec2-admin"
     remote_src: true
+    validate_certs: false
   become: true
 
 - name: Find openscap directory
   find:
     paths: /home/ec2-admin
     file_type: directory
-    patterns: "^.*(scap-security-guide.*)$"
+    patterns: "^(archive/build)$"
     recurse: no
     use_regex: yes
   register: scaplocation
@@ -89,20 +90,30 @@
 #      -w /etc/sudoers.d/ -p wa -k privileged-actions
 #  become: true
 
-- name: Replace check with update for aide
+- name: Replace check with update for aide in xccdf scan
   replace:
-    path: "{{ scaplocation.files[0].path }}/ssg-centos7-ds.xml"
+    path: "/home/ec2-admin/archive/build/ssg-centos7-ds.xml"
+    regexp: " --check"
+    replace: " --update"
+  become: true
+
+- name: Replace check with update for aide in stig playbook
+  replace:
+    path: "/home/ec2-admin/archive/build/ansible/centos7-playbook-stig.yml"
     regexp: " --check"
     replace: " --update"
   become: true
 
 # For RedHat 7, change playbook to rhel7-playbook-stig.yml
-- name: Apply PCI-DSS SCAP Profile
+- name: Apply STIG Profile while skipping 'stig_skip'
   command: >
     /usr/local/bin/ansible-playbook -c local -i localhost,
-    "{{ scaplocation.files[0].path }}/ansible/centos7-playbook-pci-dss.yml"
+    "/home/ec2-admin/archive/build/ansible/centos7-playbook-stig.yml"
     --skip-tags "{{ stig_skip }}" -u root
   become: true
+  register: out
+
+- debug: var=out.stdout_lines
 
 - name: Apply audit rules
   command: augenrules --load
