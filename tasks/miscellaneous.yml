@@ -35,7 +35,7 @@
     replace: '#Example'
   become: true
 
-- name: Replace #LocalSocket
+- name: Replace LocalSocket
   replace:
     path: /etc/clamd.d/scan.conf
     regexp: '#LocalSocket'
@@ -46,7 +46,7 @@
   replace:
     path: /etc/freshclam.conf
     regexp: '^Example'
-    replace: "#Example'
+    replace: '#Example'
   become: true
 
 - name: Update freshclam
